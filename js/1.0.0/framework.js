@@ -456,11 +456,10 @@ var framework = new class {
                 inputs = form.querySelectorAll("input, textarea, input-money"),
                 selects = form.querySelectorAll("select");
 
-            console.log(inputs);
-
             for(let key in map){
                 if(data.hasOwnProperty(key)){
                     inputs.forEach((ipt)=>{
+                        console.log(ipt.name, map[key]);
                         if(ipt.name == map[key]) ipt.value = data[key];
                     });
 
