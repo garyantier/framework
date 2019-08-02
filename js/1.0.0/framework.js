@@ -1154,13 +1154,13 @@ class InputMoney extends HTMLElement {
 
     set name(name){
         if(name == undefined) return;
-        
-        this.nodeName = name;
+
+        this.elName = name;
         this.setAttribute("name", name);
     }
 
     get name(){
-        return this.nodeName;
+        return this.elName;
     }
 
     SetCaretPos(pos) {
