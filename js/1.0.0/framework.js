@@ -459,6 +459,7 @@ var framework = new class {
             for(let key in map){
                 if(data.hasOwnProperty(key)){
                     inputs.forEach((ipt)=>{
+                        console.log(ipt.name, ipt);
                         if(ipt.name == map[key]) ipt.value = data[key];
                     });
 
