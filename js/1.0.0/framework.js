@@ -429,7 +429,7 @@ var framework = new class {
     // Info: Clear all fields in any form, 
     // regardless if generated using framework.js
     clearForm(form){
-        let inputs = form.querySelectorAll("input, textarea"),
+        let inputs = form.querySelectorAll("input, textarea, input-money"),
             selects = form.querySelectorAll("select");
     
         inputs.forEach((ipt)=>{
@@ -453,7 +453,7 @@ var framework = new class {
         bind(data){
             let form = this.form,
                 map = this.map,
-                inputs = form.querySelectorAll("input, textarea"),
+                inputs = form.querySelectorAll("input, textarea, input-money"),
                 selects = form.querySelectorAll("select");
 
             for(let key in map){
@@ -1077,8 +1077,11 @@ class InputMoney extends HTMLElement {
         dom = doc.body.childNodes[0];
         this.input = dom;
 
-        // Info: Initialize value.
+        // Info: Initialize by attributes.
         let value = this.getAttribute("value") || "0.00";
+        this.name = this.getAttribute("name");
+
+
         this.value = parseFloat(value);
         let frmtdValue = this.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         dom.value = frmtdValue;
@@ -1147,6 +1150,17 @@ class InputMoney extends HTMLElement {
 
     get value() {
         return this.val;
+    }
+
+    set name(name){
+        if(name == undefined) return;
+        
+        this.nodeName = name;
+        this.setAttribute("name", name);
+    }
+
+    get name(){
+        return this.nodeName;
     }
 
     SetCaretPos(pos) {
