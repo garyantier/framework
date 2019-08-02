@@ -459,7 +459,6 @@ var framework = new class {
             for(let key in map){
                 if(data.hasOwnProperty(key)){
                     inputs.forEach((ipt)=>{
-                        console.log(ipt.name, ipt);
                         if(ipt.name == map[key]) ipt.value = data[key];
                     });
 
@@ -1144,6 +1143,7 @@ class InputMoney extends HTMLElement {
     }
 
     set value(value) {
+        console.log("occured", value);
         let frmtdValue = parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         this.input.value = frmtdValue;
         this.val = value;
