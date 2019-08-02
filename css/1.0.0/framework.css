@@ -893,18 +893,6 @@ select.control-in-cell{
 }
 /* END TABLE */
 
-/* DATE PICKER */
-input-money{
-    border: solid 1px #9e9e9e;
-    box-sizing: border-box;
-    display: inline-flex;
-    font-family: "Poppins", sans-serif;
-    user-select: none;
-    min-height: 20px;
-    min-width: 130px;
-}
-/* END DATE PICKER */
-
 /* TEXTFIELD */
 .control-textfield{
     display: inline-block;
