@@ -1058,175 +1058,112 @@ customElements.define("date-picker", DatePicker);
 // END DATE PICKER
 
 // INPUT TYPE MONEY
-class InputMoney extends HTMLElement{
-    constructor(){
+class InputMoney extends HTMLElement {
+    constructor() {
         super();
 
-        var shadow = this.attachShadow({mode: "closed"});
+        var shadow = this.attachShadow({ mode: "closed" });
 
-        // Style (CSS)
+        // Info: Styling.
         var style = document.createElement("style");
-        style.innerText = `
-        :host,
-        #-afo-money-container{
-            align-items: center;
-            display: inline-flex;
-        }
-
-        :host{
-            background: #fff;
-            border: solid 1px #9e9e9e;
-            box-sizing: border-box;
-            font-family: "Poppins", sans-serif;
-            font-size: 13px;
-            /* user-select: none; */
-            min-height: 22px;
-            min-width: 132px;
-            outline: red;
-        }
-
-        #-afo-money-container{
-            height: 100%;
-            position: relative;
-            width: 100%;
-        }
-
-        #-afo-input-field{
-            color: rgba(0, 0, 0, .5);
-            background: transparent;
-            border: none;
-            display: block;
-            outline: none;
-            height: 100%;
-            left: 0;
-            position: absolute;
-            top: 0;
-            width: 100%;
-        }
-
-        #-afo-money-display{
-            display: flex;
-            justify-content: flex-end;
-            max-width: 100%;
-            width: 100%;
-        }
-
-        #-afo-money-display
-        span{
-            display: block;
-        }
-        `;
+        style.innerText = ``;
 
         shadow.appendChild(style);
 
-        var dom = `
-        <div id="-afo-money-container">
-            <div id="-afo-money-display">
-                <span class="-afo-money-integer">0</span>
-                <span class="-afo-money-point">.</span>
-                <span class="-afo-money-decimal">0</span>
-                <span class="-afo-money-decimal">0</span>
-            </div>
-            <input id="-afo-input-field" value="0.00">
-        </div>
-        `;
+        var dom = `<input type="text" value="0.00">`;
 
         var parser = new DOMParser(),
             doc = parser.parseFromString(dom, "text/html");
-            dom = doc.body.childNodes[0];
+        dom = doc.body.childNodes[0];
+        this.input = dom;
+
+        // Info: Initialize value.
+        let value = this.getAttribute("value") || "0.00";
+        this.value = parseFloat(value);
+        let frmtdValue = this.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        dom.value = frmtdValue;
+        this.prevVal = frmtdValue;
+
+        let prevCommaCnt = 0;
+        dom.addEventListener("input", (e) => {
+            let data = e.data;
+
+            if (!isNaN(data)) {
+                let value = dom.value || "0.00",
+                    cleanValue = parseFloat(value.replace(/,/g, "")),
+                    frmtdValue = cleanValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                    caretPos = dom.selectionStart;
+
+                let commaCnt = frmtdValue.split(",").length - 1;
+                if (commaCnt != prevCommaCnt) {
+                    caretPos += commaCnt > prevCommaCnt ? 1: -1;
+                    prevCommaCnt = commaCnt;
+                }
+
+                dom.value = frmtdValue;
+
+                if (this.prevVal == "0.00" || frmtdValue == "0.00") {
+                    this.SetCaretPos(1);
+                } else {
+                    this.SetCaretPos(caretPos);
+                }
+
+                this.value = parseFloat(cleanValue);
+                this.setAttribute("value", cleanValue);
+                this.prevVal = frmtdValue;
+            } else {
+                let cleanValue = parseFloat(this.prevVal.replace(/,/g, "")),
+                    caretPos = dom.selectionStart-1;
+
+                dom.value = this.prevVal;
+                this.SetCaretPos(caretPos);
+                this.value = parseFloat(cleanValue);
+                this.setAttribute("value", cleanValue);
+            }
+        });
+
+        dom.addEventListener("keydown", (e) => {
+            if (e.key == "ArrowLeft") {
+                let caretPos = dom.selectionStart - 2,
+                    char = dom.value[caretPos];
+
+                if (char == "." || char == ",") this.SetCaretPos(caretPos + 1);
+            } else if (e.key == "ArrowRight") {
+                let caretPos = dom.selectionStart,
+                    char = dom.value[caretPos];
+
+                if (char == "." || char == ",") this.SetCaretPos(caretPos + 1);
+            }
+        });
 
         shadow.appendChild(dom);
+    }
 
-        var input = this.input = dom.querySelector("#-afo-input-field"),
-        display = dom.querySelector("#-afo-money-display"),
-        prevVal = "",
-        ths = this;
-    
-        input.addEventListener("input", function(e){
-            let numVal = parseFloat(this.value),
-                value = numVal.toFixed(2),
-                reg = /^-?\d*\.?(\d{1,2})?$/;
+    set value(value) {
+        let frmtdValue = parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        this.input.value = frmtdValue;
+        this.val = value;
+    }
 
-            if(value == "NaN" && e.data != "-" || numVal == 0){ // If emptied OR starts with none numbers except - (negate)...
-                if(e.data == null) 
-                    input.value = "0.00";
+    get value() {
+        return this.val;
+    }
 
-                value = prevVal = "0.00";
-                ths.setCaretPosition(1);
-            }
-
-            if(reg.test(this.value)){
-                prevVal = value;
-                value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
-                var parts = value.split("."),
-                    int = parts[0].split(","),
-                    dec = parts[1];
-
-                display.innerHTML = "";
-
-                int.forEach(function(place, block){
-                    var len = place.length;
-                    for(var idx=0;idx!=len;idx++){
-                        // Insert integer digits...
-                        var digit = place[idx],
-                            _digit = document.createElement("span");
-                        _digit.classList.add("-afo-money-integer");
-                        _digit.innerText = digit;
-                        display.appendChild(_digit);
-                    }
-
-                    if(block < int.length-1){
-                        // Add commas...
-                        var comma = document.createElement("span");
-                        comma.classList.add("-afo-money-comma");
-                        comma.innerText = ", ";
-                        display.appendChild(comma);
-                    }
-                });
-
-                // Add points...
-                var point = document.createElement("span");
-                    point.classList.add("-afo-money-point");
-                    point.innerText = ".";
-                display.appendChild(point);
-
-                var len = dec.length;
-                for(var idx=0;idx!=len;idx++){
-                    // Insert integer digits...
-                    var digit = dec[idx],
-                        _digit = document.createElement("span");
-                    _digit.classList.add("-afo-money-decimal");
-                    _digit.innerText = digit;
-                    display.appendChild(_digit);
-                }
-            }else{
-                var initPos = input.selectionStart-1;
-                input.value = prevVal;
-                ths.setCaretPosition(initPos);
-            }
-        });
-
-        input.addEventListener("keyup", function(){
-            // console.log(this.selectionStart);
-            // console.log(this.selectionEnd);
-        });
-    };
-
-    setCaretPosition(pos){
+    SetCaretPos(pos) {
         var ipt = this.input;
 
-        if(ipt !== null){
-            if(ipt.createTextRange){
+        if (ipt !== null) {
+            if (ipt.createTextRange) {
                 var range = ipt.createTextRange();
                 range.move('character', pos);
                 range.select();
                 return true;
-            }else{
-                if(ipt.selectionStart || ipt.selectionStart === 0){
+            } else {
+                if (ipt.selectionStart || ipt.selectionStart === 0) {
                     ipt.focus();
                     ipt.setSelectionRange(pos, pos);
                     return true;
-                }else{
+                } else {
                     ipt.focus();
                     return false;
                 }

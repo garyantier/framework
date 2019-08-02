@@ -1,0 +1,26 @@
+<style>
+    .sample-section{
+        border: solid 1px #000;
+    }
+</style>
+
+<div class="sample-section">
+    <h1>HTTPRequest</h1>
+    <button id="httprequest_test_button">Test</button>
+</div>
+
+<script src="../../1.1.0/framework.js"></script>
+<script>
+    let httpRequestTestBtn = document.querySelector("#httprequest_test_button");
+    httpRequestTestBtn.addEventListener("click", ()=>{
+        const test = new HTTPRequest("test.php", (d)=>{
+            console.log(d);
+        });
+
+        test.Get("GET");
+
+        test.OnClientError = (code)=>{
+            alert(`Whoops! This error: ${code} just occured.`);
+        }
+    });
+</script>
